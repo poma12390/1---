@@ -1,0 +1,87 @@
+ORG 0x000
+ZERO: WORD 0x0000
+LITTLE: WORD 0x0000
+BIG: WORD 0x0000
+LOWER: WORD 0x0000
+MASK: WORD 0x00FF
+BMASK: WORD 0xFF00
+STOPSIGN: WORD 0x2E; // stop sign ("." in that case)
+BS: WORD 0x8
+
+START: CLA
+OUT 0xC
+S1: IN 0x19; // enter first sign (greater byte)
+AND #0x40;
+BEQ S1;
+IN 0x18;
+AND MASK;
+CMP STOPSIGN;
+BEQ FINISH2;
+CMP BS;
+BEQ FRSTBS;
+SWAB;
+ST BIG;
+
+S2: IN 0x19; // enter first sign (lower byte)
+AND #0x40;
+BEQ S2;
+IN 0x18;
+AND MASK;
+CMP STOPSIGN;
+BEQ FINISH1;
+CMP BS;
+BEQ S1;
+ADD BIG;
+PUSH
+JUMP S1;
+
+FRSTBS: POP; // called if the bs on first byte
+PUSH
+AND MASK;
+CMP LITTLE
+BEQ S1; // if backspase was first symbol
+POP
+AND BMASK
+ST BIG
+JUMP S2
+
+FINISH1:ADD BIG; // IF , was second byte
+FINISH2: PUSH
+
+PRINTSTART: CLA; // print a reversed string
+
+BB: IN 0xD; // Waiting printer
+AND #0x40;
+BEQ BB;
+
+PRINT: POP; // take from stack
+PUSH
+AND MASK; // if last from stack
+CMP LITTLE
+BEQ FINISH; 
+
+POP
+
+OUT 0xC	
+PUSH
+
+BC: IN 0xD; // Waiting printer
+AND #0x40;
+BEQ BC;
+
+POP
+PUSH
+SWAB
+AND MASK; // if last from stack
+CMP ZERO
+BEQ AB
+
+OUT 0xC	
+POP
+JUMP BB
+
+AB: POP
+CLA
+JUMP BB
+
+FINISH: HLT
