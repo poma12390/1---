@@ -33,8 +33,8 @@ START:  DI
 MAIN:   
     DI ;запрет прерываний чтобы обеспечить атомарность операции
     LD X
-    INC
-    INC
+    DEC
+    DEC
     CALL CHECK
     ST X
     EI
@@ -45,15 +45,22 @@ INT2: ;обработка прерывания на ВУ-2
     NOP
     IN 4
     ST SUM
-    AND SUM
-    AND SUM
+    ADD SUM
+    ADD SUM
     SUB X
+    ST X
+    CALL CHECK
     OUT 4
-    NOP
+    HLT
     EI
     IRET
 
-INT1: ;обработка прерывания на ВУ-2
+INT1: ;обработка прерывания на ВУ-1
+LD X
+ASL
+ASL
+DEC
+DEC
 OUT 2
 HLT
 
@@ -61,13 +68,11 @@ CHECK:  ;Проверка принадлежности X к ОДЗ
 CHECK_MIN:  
     CMP MIN ;если x > MIN переход на проверку верхней границы
     BPL CHECK_MAX   
-    JUMP LD_MIN ;иначе загрузка MIN в аккумулятор
+    JUMP LD_MAX ;иначе загрузка MAX в аккумулятор
 CHECK_MAX:  
     CMP MAX ;Проверка пересечения верхней границы X
     BMI RETURN  ;если x<MAX возврат
-LD_MIN: 
-    LD MIN ;Загрузка минимального значения в X  
+LD_MAX: 
+    LD MAX ;Загрузка максимального значения в X  
+    ST X
 RETURN: RET ;Метка возврата из проверки на ОДЗ  
-
-
-
