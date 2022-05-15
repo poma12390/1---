@@ -12,7 +12,10 @@ X:  WORD    0x0000  ;Переменная X
 MIN: WORD   0xFFE1  ;Нижняя граница значений X
 MAX: WORD   0x0020  ;Верхняя граница значений X
 SUM: WORD 0x0000; 
-DEFAULT:    IRET        ;Обработка прерывания по умолчанию
+
+
+DEFAULT:            ;Обработка прерывания по умолчанию
+IRET
 
 START:  DI
     CLA
@@ -51,7 +54,7 @@ INT2: ;обработка прерывания на ВУ-2
     ST X
     CALL CHECK
     OUT 4
-    HLT
+    NOP
     EI
     IRET
 
@@ -62,7 +65,8 @@ ASL
 DEC
 DEC
 OUT 2
-HLT
+NOP
+IRET
 
 CHECK:  ;Проверка принадлежности X к ОДЗ
 CHECK_MIN:  
