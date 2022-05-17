@@ -8,13 +8,22 @@ V5: WORD    $DEFAULT, 0x180
 V6: WORD    $DEFAULT, 0x180 
 V7: WORD    $DEFAULT, 0x180 
 ORG 0x020  
-X:  WORD    0x0000  ;Переменная X
+X:  WORD    0x0040  ;Переменная X
 MIN: WORD   0xFFE1  ;Нижняя граница значений X
 MAX: WORD   0x0020  ;Верхняя граница значений X
 SUM: WORD 0x0000; 
 
 
 DEFAULT:            ;Обработка прерывания по умолчанию
+PUSH
+IN 0
+IN 6
+IN 12
+IN 16
+IN 20
+IN 24
+IN 29
+POP
 IRET
 
 START:  DI
@@ -27,7 +36,7 @@ START:  DI
     OUT 0x15
     OUT 0x19
     OUT 0x1D
-    LD #0x9 ;загрузка в аккумулятор MR (1000|0001=1010)
+    LD #0x9 ;загрузка в аккумулятор MR (1000|0001=1001)
     OUT 3 ;разрешение прерываний для 1 ВУ
     LD #0xA ;загрузка в аккумулятор MR (1000|0010=1010)
     OUT 5 ;разрешение прерываний для 2 ВУ
@@ -40,32 +49,33 @@ MAIN:
     DEC
     CALL CHECK
     ST X
+    HLT ; Проверить коррекность вычитания
     EI
     JUMP MAIN
 
 INT2: ;обработка прерывания на ВУ-2
-    DI
-    NOP
+    NOP; Проверить правильность выполнения операции с ВУ-2
     IN 4
+    SXTB
     ST SUM
     ADD SUM
     ADD SUM
     SUB X
     ST X
     CALL CHECK
-    OUT 4
-    NOP
-    EI
+    NOP; Проверить правильность выполнения операции с ВУ-2
     IRET
 
 INT1: ;обработка прерывания на ВУ-1
+NOP ; проверить проавильность операции с ВУ - 1
 LD X
 ASL
 ASL
 DEC
 DEC
+CALL CHECK
 OUT 2
-NOP
+NOP ; проверить проавильность операции с ВУ - 1
 IRET
 
 CHECK:  ;Проверка принадлежности X к ОДЗ
